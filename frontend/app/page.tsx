@@ -82,7 +82,7 @@ export default function HomePage() {
     setNotice(null);
     setError(
       invalid
-        ? "Chọn ảnh PNG, JPG hoặc WebP có dung lượng tối đa 10 MB."
+        ? "Choose a PNG, JPG, or WebP image up to 10 MB."
         : null,
     );
     setViewMode("annotated");
@@ -118,20 +118,20 @@ export default function HomePage() {
 
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
-        throw new Error(payload?.detail ?? "Không phân tích được ảnh.");
+        throw new Error(payload?.detail ?? "We couldn't analyze this image.");
       }
 
       const payload = (await response.json()) as AnalyzeResponse;
       setResult(payload);
       setViewMode("annotated");
-      setNotice("Đã tạo hướng dẫn.");
+      setNotice("Your guide is ready.");
       if (window.matchMedia("(max-width: 760px)").matches)
         preview.current?.scrollIntoView({ block: "start" });
     } catch (analyzeError) {
       setError(
         analyzeError instanceof Error
           ? analyzeError.message
-          : "Không xử lý được yêu cầu.",
+          : "We couldn't process your request.",
       );
     } finally {
       setIsLoading(false);
@@ -147,27 +147,26 @@ export default function HomePage() {
             GuideLens
           </a>
           <span className="navlabel">
-            <PanelTop size={15} /> Không gian làm việc
+            <PanelTop size={15} /> Workspace
           </span>
         </div>
       </header>
       <main className="wrap">
         <div className="intro">
           <h1>
-            Hướng dẫn từ <em>ảnh chụp.</em>
+            A guide from your <em>screenshot.</em>
           </h1>
           <p>
-            Tải ảnh giao diện và mô tả mục tiêu để xem từng bước thao tác ngay
-            trên ảnh.
+            Upload a screenshot and tell us what you want to do. We’ll mark each step on the image.
           </p>
         </div>
         <div className="workspace">
           <aside className="panel setup">
             <h2>
-              <Layers /> Tạo hướng dẫn
+              <Layers /> Create a guide
             </h2>
             <form onSubmit={handleAnalyze}>
-              <span className="field">Ảnh giao diện</span>
+              <span className="field">Screenshot</span>
               <label className="drop">
                 <input
                   disabled={isLoading}
@@ -177,22 +176,22 @@ export default function HomePage() {
                   className="sr-only"
                 />
                 <UploadCloud />
-                <b>{file?.name || "Chọn ảnh để tải lên"}</b>
-                <small>PNG, JPG, WebP · Tối đa 10 MB</small>
+                <b>{file?.name || "Choose a screenshot"}</b>
+                <small>PNG, JPG, WebP · Up to 10 MB</small>
               </label>
               <label className="field" htmlFor="goal">
-                Bạn muốn làm gì?
+                What would you like to do?
               </label>
               <textarea
                 id="goal"
                 disabled={isLoading}
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Ví dụ: Làm sao để chia sẻ tài liệu này?"
+                placeholder="For example, how do I share this document?"
                 rows={3}
               />
               <button className="submit" disabled={!canSubmit}>
-                {isLoading ? "Đang phân tích…" : "Phân tích ảnh"}
+                {isLoading ? "Analyzing…" : "Analyze screenshot"}
                 {isLoading ? (
                   <Loader2 className="animate-spin" />
                 ) : (
@@ -210,9 +209,9 @@ export default function HomePage() {
           <section className="panel preview" ref={preview}>
             <div className="panelhead">
               <h2>
-                <Crosshair /> Khung xem trước
+                <Crosshair /> Screenshot preview
               </h2>
-              {!file && <span className="tag">Ví dụ minh họa</span>}
+              {!file && <span className="tag">Example</span>}
             </div>
             <div className="canvas">
               {shownImage ? (
@@ -221,36 +220,36 @@ export default function HomePage() {
                   src={shownImage}
                   alt={
                     result && viewMode === "annotated"
-                      ? "Ảnh với các bước thao tác được đánh dấu"
-                      : "Ảnh giao diện đã chọn"
+                      ? "Screenshot with numbered steps"
+                      : "Selected screenshot"
                   }
                 />
               ) : (
                 <div
                   className="sample"
-                  aria-label="Ví dụ về vị trí nút chia sẻ trong một tài liệu"
+                  aria-label="Example document with the Share button highlighted"
                 >
                   <div className="chrome">
                     <i />
                     <i />
                     <i />
-                    <span>Tài liệu của tôi</span>
+                    <span>My documents</span>
                   </div>
                   <div className="samplebar">
                     <span>
-                      <Folder size={14} /> Dự án / Sổ tay
+                      <Folder size={14} /> Projects / Field notes
                     </span>
                     <b>
                       <sup>1</sup>
-                      <Share2 size={12} /> Chia sẻ
+                      <Share2 size={12} /> Share
                       <MousePointer2 className="pointer" />
                     </b>
                   </div>
                   <div className="poster">
                     <strong>
-                      Miền
+                      Mountain
                       <br />
-                      <em>sơn cước.</em>
+                      <em>journal.</em>
                     </strong>
                     <div className="sun" />
                     <div className="ridge far" />
@@ -265,19 +264,19 @@ export default function HomePage() {
                   aria-pressed={viewMode === "annotated"}
                   onClick={() => setViewMode("annotated")}
                 >
-                  Có hướng dẫn
+                  Annotated
                 </button>
                 <button
                   aria-pressed={viewMode === "original"}
                   onClick={() => setViewMode("original")}
                 >
-                  Ảnh gốc
+                  Original
                 </button>
                 <a
                   href={result.annotated_image_data_url}
                   download="guidelens.png"
                 >
-                  <Download size={15} /> Tải ảnh
+                  <Download size={15} /> Download
                 </a>
               </div>
             ) : (
@@ -285,16 +284,16 @@ export default function HomePage() {
                 {file ? <ImagePlus /> : <MousePointerClick />}
                 {file
                   ? isLoading
-                    ? "Đang xác định vị trí các thao tác…"
-                    : "Ảnh đã sẵn sàng để phân tích."
-                  : "Chọn “Chia sẻ” ở góc trên bên phải tài liệu."}
+                    ? "Finding the steps in your screenshot…"
+                    : "Your screenshot is ready to analyze."
+                  : "Select “Share” in the upper-right corner of the document."}
               </div>
             )}
           </section>
         </div>
         {result && (
           <section className="results">
-            <h2>Các bước thao tác</h2>
+            <h2>Step-by-step guide</h2>
             <p>{result.summary}</p>
             <ol>
               {result.steps.map((step) => (
@@ -311,14 +310,14 @@ export default function HomePage() {
               <p key={i}>{w}</p>
             ))}
             <details>
-              <summary>Thông tin phân tích</summary>
+              <summary>Analysis details</summary>
               <p>
                 {result.model_used} · {result.image_width} ×{" "}
                 {result.image_height} px
               </p>
               {result.steps.map((s) => (
                 <p key={s.order}>
-                  Bước {s.order} · {s.action} / {s.target_type} · ({s.x}, {s.y})
+                  Step {s.order} · {s.action} / {s.target_type} · ({s.x}, {s.y})
                   · {s.width} × {s.height} · {Math.round(s.confidence * 100)}%
                 </p>
               ))}

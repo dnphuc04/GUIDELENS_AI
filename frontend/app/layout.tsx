@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "GuideLens AI",
-  description: "Tạo hướng dẫn từng bước từ ảnh chụp giao diện của bạn."
+  description: "Turn a screenshot into a step-by-step visual guide."
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="vi">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );
