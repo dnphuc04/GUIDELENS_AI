@@ -224,12 +224,11 @@ The frontend currently has one demo page:
 - Switch between the input and output images.
 - Inspect the returned steps and coordinates.
 
-Current theme:
+### Production deployment
 
-- Primary background: `#DEE2F2`
-- Secondary background: `#F5F5F5`
-- Button color: `#E48C3A`
-- Font: Roboto
+Set `NEXT_PUBLIC_API_BASE_URL` to the public HTTPS backend URL and `CORS_ORIGINS` to the exact public frontend origin before running `docker compose up -d --build`.
+Compose embeds the API URL during the frontend build.
+Rebuild the frontend when that URL changes.
 
 ## Quick Checks
 

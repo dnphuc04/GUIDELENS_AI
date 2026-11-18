@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "GuideLens AI",
-  description: "Upload a UI screenshot and generate annotated interaction steps."
+  description: "Tạo hướng dẫn từng bước từ ảnh chụp giao diện của bạn."
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className="font-roboto">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }
