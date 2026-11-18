@@ -320,6 +320,9 @@ textarea {
   padding: 16px 22px;
   font-size: 14px;
 }
+.tools {
+  flex-wrap: wrap;
+}
 .tools button,
 .tools a {
   padding: 7px 10px;

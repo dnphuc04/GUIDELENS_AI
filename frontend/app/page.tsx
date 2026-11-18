@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   Crosshair,
   Download,
@@ -69,32 +69,40 @@ export default function HomePage() {
       : result.original_image_data_url
     : previewUrl;
 
-  function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const selectedFile = event.target.files?.[0] ?? null;
-    const invalid =
-      selectedFile &&
-      (!["image/png", "image/jpeg", "image/webp"].includes(selectedFile.type) ||
-        selectedFile.size > 10 * 1024 * 1024 ||
-        !selectedFile.size);
-    if (invalid) event.target.value = "";
-    setFile(invalid ? null : selectedFile);
-    setResult(null);
-    setNotice(null);
-    setError(
-      invalid
-        ? "Choose a PNG, JPG, or WebP image up to 10 MB."
-        : null,
-    );
-    setViewMode("annotated");
-
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
+  function selectScreenshot(image: File) {
+    if (!["image/png", "image/jpeg", "image/webp"].includes(image.type) ||
+        image.size === 0 || image.size > 10 * 1024 * 1024) {
+      setError("Choose a PNG, JPG, or WebP image up to 10 MB.");
+      return;
     }
 
-    setPreviewUrl(
-      selectedFile && !invalid ? URL.createObjectURL(selectedFile) : null,
-    );
+    setFile(image);
+    setPreviewUrl(URL.createObjectURL(image));
+    setResult(null);
+    setNotice(null);
+    setError(null);
+    setViewMode("annotated");
   }
+
+  useEffect(() => () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+  }, [previewUrl]);
+
+  useEffect(() => {
+    function handlePaste(event: ClipboardEvent) {
+      if (isLoading || !event.clipboardData) return;
+      const item = Array.from(event.clipboardData.items).find(
+        item => item.kind === "file" && item.type.startsWith("image/"),
+      );
+      const image = item?.getAsFile();
+      if (!image) return;
+      event.preventDefault();
+      selectScreenshot(image);
+    }
+
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [isLoading]);
 
   async function handleAnalyze(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -129,7 +137,9 @@ export default function HomePage() {
         preview.current?.scrollIntoView({ block: "start" });
     } catch (analyzeError) {
       setError(
-        analyzeError instanceof Error
+        analyzeError instanceof TypeError
+          ? "Couldn't reach the analysis service. Your screenshot is still here. Try again in a moment."
+          : analyzeError instanceof Error
           ? analyzeError.message
           : "We couldn't process your request.",
       );
@@ -172,11 +182,16 @@ export default function HomePage() {
                   disabled={isLoading}
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
-                  onChange={handleFileChange}
+                  onChange={event => {
+                    const image = event.target.files?.[0];
+                    if (image) selectScreenshot(image);
+                    event.target.value = "";
+                  }}
                   className="sr-only"
                 />
                 <UploadCloud />
                 <b>{file?.name || "Choose a screenshot"}</b>
+                <small>Or paste anywhere with ⌘V or Ctrl+V</small>
                 <small>PNG, JPG, WebP · Up to 10 MB</small>
               </label>
               <label className="field" htmlFor="goal">

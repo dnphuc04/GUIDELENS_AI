@@ -2,11 +2,15 @@
 
 GuideLens AI is a one-page demo app that helps users understand what to do on a UI screenshot.
 
-The user uploads a screenshot and enters a question or goal. The backend sends the image to OpenAI, asks the model to identify useful UI actions, and receives step-by-step guidance with pixel coordinates. The backend then draws those steps directly onto the original image and returns a new annotated output image.
+The user pastes or uploads a screenshot and enters a question or goal.
+The backend sends the image to OpenAI, asks the model to identify useful UI actions, and receives step-by-step guidance with pixel coordinates.
+The backend then draws those steps directly onto the original image and returns a new annotated output image.
 
 ## Before and After
 
-The app starts with a clean upload screen. After the user uploads a screenshot and enters a goal, the AI analyzes the interface, returns the recommended action steps, and the backend draws the guidance directly on top of the image.
+Copy a screenshot and paste it anywhere in the workspace with **⌘V** on Mac or **Ctrl+V** on Windows and Linux.
+You can also select an image file.
+The screenshots below show the workspace and an example result using a sample response.
 
 | Before analysis | After analysis |
 | --- | --- |
@@ -14,7 +18,7 @@ The app starts with a clean upload screen. After the user uploads a screenshot a
 
 ## Main Features
 
-- Upload a UI screenshot from the frontend.
+- Paste a screenshot from the clipboard or choose an image file.
 - Enter a question or task goal.
 - Use AI to analyze the screenshot and identify interaction steps.
 - Draw numbered boxes and labels on top of the uploaded image.

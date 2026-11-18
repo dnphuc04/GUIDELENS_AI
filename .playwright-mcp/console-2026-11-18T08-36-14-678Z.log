@@ -1,0 +1,2 @@
+[  110289ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:8000/api/analyze:1
+[  193264ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://localhost:8000/api/analyze:1
