@@ -12,6 +12,12 @@ Analyze this screenshot and produce UI guidance for a user.
 Primary goal:
 {user_goal}
 
+Answer in the language of the user's goal. Honor explicit language requests.
+Write the summary, descriptions, warnings and likely next steps in that language.
+Copy visible control labels exactly as shown so the user can match them, even if they use another language.
+Tailor each instruction to its action: identify the item to select, what to enter, or what visible change to look for.
+Keep instructions concise; avoid repeating the summary or inventing hidden UI.
+
 Image size:
 {image_width}x{image_height} pixels.
 

@@ -1,9 +1,11 @@
 import base64
+import json
 from io import BytesIO
 from time import perf_counter
 
 from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import StreamingResponse
 from PIL import Image, UnidentifiedImageError
 
 from ai_services.openai_vision import analyze_ui_image
@@ -32,6 +34,7 @@ async def analyze_image(
     response: Response,
     file: UploadFile = File(...),
     include_original: bool = Form(True),
+    stream_guide: bool = Form(False),
     user_goal: str = Form("Analyze the screenshot and guide the next UI actions."),
 ) -> AnalyzeResponse:
     if not file.content_type or not file.content_type.startswith("image/"):
@@ -68,26 +71,33 @@ async def analyze_image(
         raise HTTPException(status_code=502, detail=f"AI analysis failed: {exc}") from exc
 
     model_done = perf_counter()
-    annotated_image_data_url = await run_in_threadpool(
-        render_steps_overlay_data_url,
-        image_bytes=image_bytes,
-        steps=analysis.steps,
-    )
-
-    response.headers["Server-Timing"] = (
-        f"model;dur={(model_done - started) * 1000:.0f}, "
-        f"overlay;dur={(perf_counter() - model_done) * 1000:.0f}"
-    )
-    return AnalyzeResponse(
+    guide = dict(
         source_filename=file.filename,
         image_width=image_width,
         image_height=image_height,
         image_mime_type=file.content_type,
         model_used=settings.openai_model,
         summary=analysis.summary,
-        steps=analysis.steps,
+        steps=[step.model_dump() for step in analysis.steps],
         suggested_next_steps=analysis.suggested_next_steps,
         warnings=analysis.warnings,
         original_image_data_url=_image_to_data_url(image_bytes, file.content_type) if include_original else None,
-        annotated_image_data_url=annotated_image_data_url,
     )
+
+    async def render_overlay():
+        return await run_in_threadpool(render_steps_overlay_data_url, image_bytes, analysis.steps)
+
+    if stream_guide:
+        async def events():
+            yield json.dumps({"guide": guide}) + "\n"
+            yield json.dumps({"overlay": await render_overlay()}) + "\n"
+
+        return StreamingResponse(events(), media_type="application/x-ndjson",
+                                 headers={"Server-Timing": f"model;dur={(model_done - started) * 1000:.0f}"})
+
+    overlay = await render_overlay()
+    response.headers["Server-Timing"] = (
+        f"model;dur={(model_done - started) * 1000:.0f}, "
+        f"overlay;dur={(perf_counter() - model_done) * 1000:.0f}"
+    )
+    return AnalyzeResponse(**guide, annotated_image_data_url=overlay)
