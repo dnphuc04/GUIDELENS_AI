@@ -18,7 +18,9 @@ Image size:
 What to detect:
 - Visible text and UI state in the screenshot.
 - Clickable controls, input fields, tabs, links, menus, or important regions.
-- The ordered steps the user should perform to reach the goal.
+- Only mark controls actually visible in this screenshot. Stop at the action that changes screen.
+- For suggested_next_steps, predict up to two likely follow-up actions if useful. Use conditional language, without coordinates or invented button names. Return [] when the visible actions finish the goal.
+- When no relevant control is visible, return an empty steps array and explain what is missing in warnings.
 - A tight bounding box for each target in original image pixels.
 
 Return JSON matching the provided schema.
@@ -40,6 +42,7 @@ Example shape:
       "confidence": 0.86
     }}
   ],
+  "suggested_next_steps": [],
   "warnings": []
 }}
 

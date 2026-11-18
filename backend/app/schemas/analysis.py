@@ -11,6 +11,7 @@ class AnalyzeResponse(BaseModel):
     model_used: str
     summary: str = ""
     steps: list[UIStep]
+    suggested_next_steps: list[str]
     warnings: list[str] = []
-    original_image_data_url: str
+    original_image_data_url: str | None
     annotated_image_data_url: str

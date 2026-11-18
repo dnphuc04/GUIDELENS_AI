@@ -81,6 +81,7 @@ def analyze_ui_image(
 
     response = client.responses.create(
         model=selected_model,
+        **({"reasoning": {"effort": "low"}} if selected_model == "gpt-6.1-terra" else {}),
         instructions=SYSTEM_PROMPT,
         input=[
             {

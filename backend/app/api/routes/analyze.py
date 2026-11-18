@@ -1,7 +1,8 @@
 import base64
 from io import BytesIO
+from time import perf_counter
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from PIL import Image, UnidentifiedImageError
 
@@ -28,7 +29,9 @@ def api_health() -> dict[str, str]:
 
 @router.post("/analyze", response_model=AnalyzeResponse)
 async def analyze_image(
+    response: Response,
     file: UploadFile = File(...),
+    include_original: bool = Form(True),
     user_goal: str = Form("Analyze the screenshot and guide the next UI actions."),
 ) -> AnalyzeResponse:
     if not file.content_type or not file.content_type.startswith("image/"):
@@ -48,6 +51,7 @@ async def analyze_image(
 
     settings = get_settings()
 
+    started = perf_counter()
     try:
         analysis = await run_in_threadpool(
             analyze_ui_image,
@@ -63,11 +67,17 @@ async def analyze_image(
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"AI analysis failed: {exc}") from exc
 
-    annotated_image_data_url = render_steps_overlay_data_url(
+    model_done = perf_counter()
+    annotated_image_data_url = await run_in_threadpool(
+        render_steps_overlay_data_url,
         image_bytes=image_bytes,
         steps=analysis.steps,
     )
 
+    response.headers["Server-Timing"] = (
+        f"model;dur={(model_done - started) * 1000:.0f}, "
+        f"overlay;dur={(perf_counter() - model_done) * 1000:.0f}"
+    )
     return AnalyzeResponse(
         source_filename=file.filename,
         image_width=image_width,
@@ -76,7 +86,8 @@ async def analyze_image(
         model_used=settings.openai_model,
         summary=analysis.summary,
         steps=analysis.steps,
+        suggested_next_steps=analysis.suggested_next_steps,
         warnings=analysis.warnings,
-        original_image_data_url=_image_to_data_url(image_bytes, file.content_type),
+        original_image_data_url=_image_to_data_url(image_bytes, file.content_type) if include_original else None,
         annotated_image_data_url=annotated_image_data_url,
     )

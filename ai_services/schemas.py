@@ -17,18 +17,20 @@ class UIStep(BaseModel):
 class UIAnalysis(BaseModel):
     summary: str = ""
     steps: list[UIStep] = Field(default_factory=list)
+    suggested_next_steps: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
 
 
 UI_ANALYSIS_JSON_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["summary", "steps", "warnings"],
+    "required": ["summary", "steps", "warnings", "suggested_next_steps"],
     "properties": {
         "summary": {
             "type": "string",
             "description": "A concise description of the detected user flow.",
         },
+        "suggested_next_steps": {"type": "array", "items": {"type": "string"}, "maxItems": 2},
         "warnings": {
             "type": "array",
             "items": {"type": "string"},
@@ -36,7 +38,7 @@ UI_ANALYSIS_JSON_SCHEMA = {
         },
         "steps": {
             "type": "array",
-            "minItems": 1,
+            "minItems": 0,
             "maxItems": 8,
             "items": {
                 "type": "object",

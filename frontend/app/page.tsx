@@ -38,8 +38,8 @@ type AnalyzeResponse = {
   model_used: string;
   summary: string;
   steps: Step[];
+  suggested_next_steps?: string[];
   warnings: string[];
-  original_image_data_url: string;
   annotated_image_data_url: string;
 };
 
@@ -66,7 +66,7 @@ export default function HomePage() {
   const shownImage = result
     ? viewMode === "annotated"
       ? result.annotated_image_data_url
-      : result.original_image_data_url
+      : previewUrl
     : previewUrl;
 
   function selectScreenshot(image: File) {
@@ -76,6 +76,8 @@ export default function HomePage() {
       return;
     }
 
+    // Start a sleeping backend while the user writes the goal.
+    void fetch(`${apiBaseUrl}/health`, { cache: "no-store" }).catch(() => {});
     setFile(image);
     setPreviewUrl(URL.createObjectURL(image));
     setResult(null);
@@ -116,6 +118,7 @@ export default function HomePage() {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("include_original", "false");
     formData.append("user_goal", question.trim());
 
     try {
@@ -321,6 +324,12 @@ export default function HomePage() {
                 </li>
               ))}
             </ol>
+            {!!result.suggested_next_steps?.length && (
+              <section>
+                <h3>Likely next steps</h3>
+                {result.suggested_next_steps.map((step, index) => <p key={index}>{step}</p>)}
+              </section>
+            )}
             {result.warnings.map((w, i) => (
               <p key={i}>{w}</p>
             ))}
